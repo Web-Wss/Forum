@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahnu.mapper.UserMapper">
+
+    <!--登录验证-->
+    <select id="Login" parameterType="user" resultType="user">
+        select * from
+            users
+        where
+            phone = #{phone} and password = #{password}
+    </select>
+
+    <!--    用户注册（手机验证）-->
+    <select id="RegisterPhone" parameterType="string" resultType="int">
+        select count(phone) from users where phone = #{phone}
+    </select>
+
+    <!--    用户注册（用户名校验）-->
+    <select id="RegisterUsername" parameterType="string" resultType="int">
+        select count(username) from users where username = #{username}
+    </select>
+
+    <!--    用户注册-->
+    <insert id="RegisterRegister" parameterType="user">
+        insert into users (username,nickname,password,phone,avatar) values(#{username},#{username},#{password},#{phone},#{avatar})
+    </insert>
+
+    <!--    获取用户信息-->
+    <select id="GetUserInfo" parameterType="user" resultType="user">
+        SELECT * FROM users WHERE user_id = #{user_id} AND phone = #{phone}
+    </select>
+
+<!--    获取用户的头像地址-->
+    <select id="PathFromUserId" parameterType="int" resultType="string">
+        select avatar from users where user_id = #{user_id}
+    </select>
+
+<!--    修改用户的头像地址-->
+    <update id="UpdateUserAvatar" parameterType="user">
+        UPDATE users SET avatar = #{avatar} where user_id = #{user_id}
+    </update>
+
+    <!--    修改用户信息-->
+    <update id="EditUserInfo" parameterType="user">
+        UPDATE users SET user_sex = #{user_sex},user_autograph = #{user_autograph} WHERE user_id = #{user_id}
+    </update>
+
+    <!--    修改用户昵称-->
+    <update id="EditUserNickName" parameterType="user">
+        UPDATE users SET nickname = #{nickname} WHERE user_id = #{user_id}
+    </update>
+
+
+
+<!--    获取用户关注的用户-->
+    <resultMap id="GetUserLikeUserMap" type="userslike">
+        <id column="users_like_id" property="users_like_id"></id>
+        <result column="user_id" property="user_id"></result>
+        <result column="user_b_id" property="user_b_id"></result>
+        <collection property="userList"
+                    ofType="user"
+                    select="UserAll"
+                    column="user_b_id">
+        </collection>
+        <collection property="IsMutual"
+                    select="UserAll2"
+                    column="{user_b_id=user_b_id,user_id=user_id}">
+        </collection>
+        <collection property="IsMutuals"
+                    select="UserAll3"
+                    column="{user_b_id=user_b_id,user_id=user_id}">
+        </collection>
+    </resultMap>
+    <resultMap id="GetUserLikeUserMap1" type="user">
+        <id column="user_id" property="user_id"></id>
+        <result column="nickname" property="nickname"></result>
+        <result column="avatar" property="avatar"></result>
+        <result column="user_autograph" property="user_autograph"></result>
+    </resultMap>
+    <select id="UserAll" resultMap="GetUserLikeUserMap1">
+        SELECT user_id,nickname,avatar,user_autograph FROM users WHERE user_id = #{user_b_id}
+    </select>
+    <select id="UserAll2" resultType="int">
+        SELECT COUNT(*) FROM users_like WHERE user_id = #{user_b_id} AND user_b_id = #{user_id}
+    </select>
+    <select id="UserAll3" resultType="int">
+        SELECT COUNT(*) FROM users_like WHERE user_id = #{user_id} AND user_b_id = #{user_b_id}
+    </select>
+    <select id="GetUserLikeUser" resultMap="GetUserLikeUserMap">
+        SELECT * FROM users_like WHERE user_id = #{user_id}
+    </select>
+
+
+    <!--    获取用户粉丝用户-->
+    <resultMap id="GetLikeUserMap" type="userslike">
+        <id column="users_like_id" property="users_like_id"></id>
+        <result column="user_id" property="user_id"></result>
+        <result column="user_b_id" property="user_b_id"></result>
+        <collection property="userList"
+                    ofType="user"
+                    select="UserAll11"
+                    column="user_id">
+        </collection>
+        <collection property="IsMutual"
+                    select="UserAll22"
+                    column="{user_b_id=user_b_id,user_id=user_id}">
+        </collection>
+        <collection property="IsMutuals"
+                    select="UserAll33"
+                    column="{user_b_id=user_b_id,user_id=user_id}">
+        </collection>
+    </resultMap>
+    <resultMap id="GetLikeUserMap11" type="user">
+        <id column="user_id" property="user_id"></id>
+        <result column="nickname" property="nickname"></result>
+        <result column="avatar" property="avatar"></result>
+        <result column="user_autograph" property="user_autograph"></result>
+    </resultMap>
+    <select id="UserAll11" resultMap="GetLikeUserMap11">
+        SELECT user_id,nickname,avatar,user_autograph FROM users WHERE user_id = #{user_id}
+    </select>
+    <select id="UserAll22" resultType="int">
+        SELECT COUNT(*) FROM users_like WHERE user_id = #{user_id} AND user_b_id = #{user_b_id}
+    </select>
+    <select id="UserAll33" resultType="int">
+        SELECT COUNT(*) FROM users_like WHERE user_id = #{user_b_id} AND user_b_id = #{user_id}
+    </select>
+    <select id="GetLikeUser" resultMap="GetLikeUserMap">
+        SELECT * FROM users_like WHERE user_b_id = #{user_id}
+    </select>
+
+
+<!--    用户关注的吧-->
+    <select id="UserLikeBar" resultType="userlikebar">
+        SELECT l.posts_bar_like_id,l.posts_bar_id,user_id,b.posts_bar_name,b.posts_bar_logo_path FROM
+            posts_bar_like l
+                LEFT JOIN posts_bar b ON b.posts_bar_id = l.posts_bar_id
+        WHERE user_id = #{user_id}
+    </select>
+
+
+<!--    查询用户收藏的帖子-->
+    <resultMap id="GetUserSaveMap" type="usersaveposts">
+        <id column="posts_save_id" property="posts_save_id"></id>
+        <result column="posts_id" property="posts_id"></result>
+        <result column="save_user_id" property="save_user_id"></result>
+        <collection property="posts"
+                    ofType="posts"
+                    select="SelectPosts"
+                    column="posts_id">
+        </collection>
+        <collection property="postsImgList"
+                    ofType="postsimg"
+                    select="SelectPostsImg"
+                    column="posts_id">
+        </collection>
+    </resultMap>
+    <resultMap id="SelectPostsMap" type="posts">
+        <id column="posts_id" property="posts_id"></id>
+        <result column="user_id" property="user_id"></result>
+        <result column="posts_bar_id" property="posts_bar_id"></result>
+        <result column="posts_title" property="posts_title"></result>
+        <result column="posts_content" property="posts_content"></result>
+        <result column="posts_time" property="posts_time"></result>
+        <collection property="user"
+                    ofType="user"
+                    select="SelectUsers"
+                    column="user_id">
+        </collection>
+    </resultMap>
+    <resultMap id="SelectUsersMap" type="user">
+        <id column="user_id" property="user_id"></id>
+        <result column="nickname" property="nickname"></result>
+        <result column="avatar" property="avatar"></result>
+    </resultMap>
+    <resultMap id="SelectPostsImgMap" type="postsimg">
+        <id column="posts_img_id" property="posts_img_id"></id>
+        <result column="posts_id" property="posts_id"></result>
+        <result column="posts_img_path" property="posts_img_path"></result>
+    </resultMap>
+    <select id="SelectPostsImg" resultMap="SelectPostsImgMap">
+        SELECT * FROM posts_img WHERE posts_id = #{posts_id}
+    </select>
+    <select id="SelectUsers" resultMap="SelectUsersMap">
+        SELECT
+            user_id,nickname,avatar
+        FROM users WHERE user_id = #{user_id}
+    </select>
+    <select id="SelectPosts" resultMap="SelectPostsMap">
+        SELECT * FROM posts WHERE posts_id = #{posts_id}
+    </select>
+    <select id="GetUserSave" resultMap="GetUserSaveMap">
+        SELECT
+        posts_save_id,posts_id,save_user_id
+        FROM posts_save WHERE save_user_id = #{save_user_id}
+        ORDER by posts_save_id desc
+    </select>
+
+
+<!--  My页面的四个数据  -->
+    <resultMap id="MyFourInfoMap" type="myfourinfo">
+        <id column="user_id" property="user_id"></id>
+        <collection property="user_like_sum"
+                    select="user_like_sum"
+                    column="user_id">
+        </collection>
+        <collection property="like_user_sum"
+                    select="like_user_sum"
+                    column="user_id">
+        </collection>
+        <collection property="like_bar_sum"
+                    select="like_bar_sum"
+                    column="user_id">
+        </collection>
+        <collection property="user_posts_sum"
+                    select="user_posts_sum"
+                    column="user_id">
+        </collection>
+    </resultMap>
+    <select id="SelectMyFourInfo" resultMap="MyFourInfoMap">
+        SELECT #{user_id} AS user_id
+    </select>
+    <select id="user_like_sum" resultType="int">
+        SELECT COUNT(*) FROM users_like WHERE user_id = #{user_id}
+    </select>
+    <select id="like_user_sum" resultType="int">
+        SELECT COUNT(*) FROM users_like WHERE user_b_id = #{user_id}
+    </select>
+    <select id="like_bar_sum" resultType="int">
+        SELECT COUNT(*) FROM posts_bar_like WHERE user_id = #{user_id}
+    </select>
+    <select id="user_posts_sum" resultType="int">
+        SELECT COUNT(*) FROM posts WHERE user_id = #{user_id}
+    </select>
+
+<!--  查询是否有关注当前用户  -->
+    <select id="SelectUserLikeUser" parameterType="userslike" resultType="int">
+        SELECT COUNT(*) FROM users_like WHERE user_id = #{user_id} AND user_b_id = #{user_b_id}
+    </select>
+
+<!--  取消当前用户关注的用户-->
+    <delete id="CancelUserLikeUser" parameterType="userslike">
+        DELETE FROM users_like WHERE user_id = #{user_id} AND user_b_id = #{user_b_id}
+    </delete>
+
+<!--    添加用户关注-->
+    <insert id="InsertUserLike" parameterType="userslike">
+        INSERT INTO users_like(user_id,user_b_id) VALUES(#{user_id},#{user_b_id})
+    </insert>
+</mapper>

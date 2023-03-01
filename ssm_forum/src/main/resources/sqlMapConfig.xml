@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!--    加载properties文件-->
+    <properties resource="jdbc.properties"></properties>
+
+
+
+    <!--    定义别名-->
+    <typeAliases>
+        <typeAlias type="com.ahnu.domain.User" alias="user"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsBar" alias="postsbar"></typeAlias>
+        <typeAlias type="com.ahnu.domain.Posts" alias="posts"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsImg" alias="postsimg"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsCom" alias="postscom"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsLike" alias="postslike"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsSave" alias="postssave"></typeAlias>
+        <typeAlias type="com.ahnu.domain.HomePosts" alias="homeposts"></typeAlias>
+        <typeAlias type="com.ahnu.domain.BarPostsFz" alias="barpostsfz"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsCom" alias="postscom"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsLike" alias="postslike"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsLikeUser" alias="postslikeuser"></typeAlias>
+        <typeAlias type="com.ahnu.domain.HomePosts" alias="myposts"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsDetail" alias="postsdetail"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsComCom" alias="postscomcom"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsHistory" alias="postshistory"></typeAlias>
+        <typeAlias type="com.ahnu.domain.UsersLike" alias="userslike"></typeAlias>
+        <typeAlias type="com.ahnu.domain.SearchResult" alias="searchresult"></typeAlias>
+        <typeAlias type="com.ahnu.domain.PostsBarLike" alias="postsbarlike"></typeAlias>
+        <typeAlias type="com.ahnu.domain.UserLikeBar" alias="userlikebar"></typeAlias>
+        <typeAlias type="com.ahnu.domain.UserSavePosts" alias="usersaveposts"></typeAlias>
+        <typeAlias type="com.ahnu.domain.MyFourInfo" alias="myfourinfo"></typeAlias>
+        <!--        <package name="com.ahnu.domain"></package>-->
+    </typeAliases>
+
+
+    <!--    环境-->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"></property>
+                <property name="url" value="${jdbc.url}"></property>
+                <property name="username" value="${jdbc.username}"></property>
+                <property name="password" value="${jdbc.password}"></property>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--    加载映射-->
+    <mappers>
+        <!--                <mapper resource="com/ahnu/mapper/UserMapper.xml"></mapper>-->
+        <package name="com.ahnu.mapper"/>
+    </mappers>
+
+</configuration>

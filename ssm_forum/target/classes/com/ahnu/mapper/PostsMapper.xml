@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahnu.mapper.PostsMapper">
+
+
+<!--    获取表吧集合-->
+    <select id="PostsBarAll" resultType="postsbar">
+        SELECT * FROM posts_bar
+    </select>
+
+    <!--    添加帖子-->
+    <!--    添加帖子基本内容-->
+    <insert id="PostsInfoSave" parameterType="posts" useGeneratedKeys="true" keyProperty="posts_id" keyColumn="posts_id">
+        INSERT INTO posts (user_id,posts_bar_id,posts_title,posts_content) VALUES(#{user_id},#{posts_bar_id},#{posts_title},#{posts_content})
+    </insert>
+
+    <!--    添加帖子图片-->
+    <insert id="publishAndImg" parameterType="posts">
+        INSERT INTO posts_img (posts_id,posts_img_path) values(#{posts_id},#{posts_img_path})
+    </insert>
+
+
+    <!--    首页帖子查询-->
+    <resultMap id="HomePostsMap" type="homeposts">
+        <id column="posts_id" property="posts_id"></id>
+        <result column="user_id" property="user_id"></result>
+        <result column="posts_bar_id" property="posts_bar_id"></result>
+        <result column="posts_title" property="posts_title"></result>
+        <result column="posts_content" property="posts_content"></result>
+        <result column="posts_time" property="posts_time"></result>
+        <result column="username" property="username"></result>
+        <result column="nickname" property="nickname"></result>
+        <result column="user_sex" property="user_sex"></result>
+        <result column="phone" property="phone"></result>
+        <result column="avatar" property="avatar"></result>
+        <result column="user_autograph" property="user_autograph"></result>
+        <result column="user_time" property="user_time"></result>
+        <result column="posts_bar_name" property="posts_bar_name"></result>
+        <result column="posts_bar_logo_path" property="posts_bar_logo_path"></result>
+        <result column="yz_user_id" property="yz_user_id"></result>
+        <collection property="postsImgList"
+                    ofType="postsimg"
+                    select="HomePostsAll1"
+                    column="posts_id">
+        </collection>
+        <collection property="postsComList"
+                    select="HomePostsAll2"
+                    column="posts_id">
+        </collection>
+        <collection property="postsLikeList"
+                    select="HomePostsAll3"
+                    column="posts_id">
+        </collection>
+        <collection property="postsLikeUserList"
+                    select="HomePostsAll4"
+                    column="{posts_id=posts_id,yz_user_id=yz_user_id}">
+        </collection>
+    </resultMap>
+    <resultMap id="HomePostsMap1" type="postsimg">
+        <id column="posts_img_id" property="posts_img_id"></id>
+        <result column="posts_id" property="posts_id"></result>
+        <result column="posts_img_path" property="posts_img_path"></result>
+    </resultMap>
+    <select id="HomePostsAll" parameterType="int"  resultMap="HomePostsMap" >
+        SELECT p.posts_id,u.user_id,p.posts_bar_id,p.posts_title,p.posts_content,p.posts_time ,
+               u.username,u.nickname,u.user_sex,u.phone,u.avatar,u.user_autograph,u.user_time,
+               b.posts_bar_name,b.posts_bar_logo_path,
+               #{yz_user_id} AS YZ_user_id
+        FROM posts p
+                 LEFT JOIN users u ON u.user_id = p.user_id
+                 LEFT JOIN posts_bar b ON b.posts_bar_id = p.posts_bar_id
+        ORDER BY p.posts_time DESC
+    </select>
+    <select id="HomePostsAll1" resultMap="HomePostsMap1">
+        select * from posts_img where posts_id = #{posts_id}
+    </select>
+    <select id="HomePostsAll2" resultType="int">
+        select COUNT(*) from posts_com where posts_id = #{posts_id}
+    </select>
+    <select id="HomePostsAll3" resultType="int">
+        select COUNT(*) from posts_like where posts_id = #{posts_id}
+    </select>
+    <select id="HomePostsAll4" resultType="int">
+        select COUNT(*) from posts_like where posts_id = #{posts_id} AND user_id = #{yz_user_id}
+    </select>
+
+
+
+
+    <!--    吧帖子查询-->
+
+    <select id="BarPostsAll" parameterType="int"  resultMap="HomePostsMap" >
+        SELECT p.posts_id,u.user_id,p.posts_bar_id,p.posts_title,p.posts_content,p.posts_time ,
+               u.username,u.nickname,u.user_sex,u.phone,u.avatar,u.user_autograph,u.user_time,
+               b.posts_bar_name,b.posts_bar_logo_path,
+               #{yz_user_id} AS YZ_user_id
+        FROM posts p
+                 LEFT JOIN users u ON u.user_id = p.user_id
+                 LEFT JOIN posts_bar b ON b.posts_bar_id = p.posts_bar_id
+                WHERE b.posts_bar_id = #{bar_id}
+        ORDER BY p.posts_time DESC
+    </select>
+
+
+
+
+
+<!--    查询当前用户有没有给当前帖子点赞-->
+    <select id="SelectUserLike" resultType="int">
+        SELECT COUNT(*) FROM posts_like WHERE user_id = #{user_id} AND posts_id = #{posts_id}
+    </select>
+
+<!--    删除当前用户的点赞-->
+    <delete id="DeleteUserLike">
+        DELETE FROM posts_like WHERE user_id = #{user_id} AND posts_id = #{posts_id}
+    </delete>
+
+<!--    添加点赞记录-->
+    <insert id="InsertUserLike">
+        INSERT INTO posts_like(user_id,posts_id) VALUE(#{user_id},#{posts_id})
+    </insert>
+
+
+<!--    查询帖子详情-->
+
+    <resultMap id="PostsDetailMap" type="postsdetail">
+        <id column="posts_id" property="posts_id"></id>
+        <result column="user_id" property="user_id"></result>
+        <result column="posts_bar_id" property="posts_bar_id"></result>
+        <result column="posts_title" property="posts_title"></result>
+        <result column="posts_content" property="posts_content"></result>
+        <result column="posts_time" property="posts_time"></result>
+        <result column="username" property="username"></result>
+        <result column="nickname" property="nickname"></result>
+        <result column="user_sex" property="user_sex"></result>
+        <result column="phone" property="phone"></result>
+        <result column="avatar" property="avatar"></result>
+        <result column="user_autograph" property="user_autograph"></result>
+        <result column="user_time" property="user_time"></result>
+        <result column="posts_bar_name" property="posts_bar_name"></result>
+        <result column="posts_bar_logo_path" property="posts_bar_logo_path"></result>
+        <result column="yz_user_id" property="yz_user_id"></result>
+        <collection property="postsImgList"
+                    ofType="postsimg"
+                    select="PostsDetailAll1"
+                    column="posts_id">
+        </collection>
+        <collection property="postsComList"
+                    ofType="postscom"
+                    select="PostsDetailAll2"
+                    column="posts_id">
+        </collection>
+    </resultMap>
+    <resultMap id="PostsDetailAll1Map1" type="postsimg">
+        <id column="posts_img_id" property="posts_img_id"></id>
+        <result column="posts_id" property="posts_id"></result>
+        <result column="posts_img_path" property="posts_img_path"></result>
+    </resultMap>
+    <resultMap id="PostsDetailAll1Map2" type="postscom">
+        <id column="posts_com_id" property="posts_com_id"></id>
+        <result column="posts_id" property="posts_id"></result>
+        <result column="posts_com_content" property="posts_com_content"></result>
+        <result column="user_id" property="user_id"></result>
+        <result column="avatar" property="avatar"></result>
+        <result column="nickname" property="nickname"></result>
+        <result column="posts_com_time" property="posts_com_time"></result>
+        <collection property="postsComComList"
+                    ofType="postscomcom"
+                    select="PostsDetailAll3"
+                    column="posts_com_id">
+        </collection>
+    </resultMap>
+    <resultMap id="PostsDetailAll1Map3" type="postscomcom">
+        <id column="posts_com_com_id" property="posts_com_com_id"></id>
+        <result column="posts_com_id" property="posts_com_id"></result>
+        <result column="user_id" property="user_id"></result>
+        <result column="posts_com_com_time" property="posts_com_com_time"></result>
+        <result column="posts_com_com_content" property="posts_com_com_content"></result>
+        <result column="nickname" property="nickname"></result>
+    </resultMap>
+    <select id="PostsDetail" parameterType="int"  resultMap="PostsDetailMap" >
+        SELECT p.posts_id,u.user_id,p.posts_bar_id,p.posts_title,p.posts_content,p.posts_time ,
+               u.username,u.nickname,u.user_sex,u.phone,u.avatar,u.user_autograph,u.user_time,
+               b.posts_bar_name,b.posts_bar_logo_path,
+               #{yz_user_id} AS YZ_user_id
+        FROM posts p
+                 LEFT JOIN users u ON u.user_id = p.user_id
+                 LEFT JOIN posts_bar b ON b.posts_bar_id = p.posts_bar_id
+        WHERE p.posts_id = #{posts_id}
+    </select>
+    <select id="PostsDetailAll1" resultMap="PostsDetailAll1Map1">
+        select * from posts_img where posts_id = #{posts_id}
+    </select>
+    <select id="PostsDetailAll2" resultMap="PostsDetailAll1Map2">
+        SELECT p.posts_com_id,p.posts_id,p.posts_com_content,p.user_id,u.avatar,u.nickname,p.posts_com_time
+        FROM
+            posts_com p
+                LEFT JOIN users u ON p.user_id = u.user_id
+        WHERE posts_id = #{posts_id}
+        ORDER BY posts_com_time DESC
+    </select>
+    <select id="PostsDetailAll3" resultMap="PostsDetailAll1Map3">
+        SELECT * FROM posts_com_com p
+        LEFT JOIN users u ON u.user_id = p.user_id
+        WHERE posts_com_id = #{posts_com_id}
+    </select>
+
+
+<!--    帖子评论-->
+    <insert id="InsertPostsCom">
+        INSERT INTO posts_com(posts_id,posts_com_content,user_id) VALUE(#{posts_id},#{posts_com_content},#{user_id})
+    </insert>
+
+    <!--    子帖子评论-->
+    <insert id="InsertPostsComCom">
+        INSERT INTO posts_com_com(posts_com_id,posts_com_com_content,user_id) VALUE(#{posts_com_id},#{posts_com_com_content},#{user_id})
+    </insert>
+
+
+
+<!--删除主帖子评论-->
+    <delete id="DeleteCom">
+        DELETE FROM posts_com WHERE posts_com_id = #{posts_com_id}
+    </delete>
+<!--    删除子评论-->
+    <delete id="DeleteComCom">
+        DELETE FROM posts_com_com WHERE posts_com_id = #{posts_com_id}
+    </delete>
+
+
+<!--    将浏览贴吧的历史存入数据库-->
+<!--    查询数据库中是否有当前帖子的记录-->
+    <select id="SelectPostsHistory" resultType="int">
+        SELECT COUNT(*) FROM posts_history WHERE user_id = #{user_id} AND posts_id = #{posts_id}
+    </select>
+    <insert id="InsertPostsHistory">
+        INSERT INTO posts_history(user_id,posts_id,posts_title,posts_bar_name) VALUES(#{user_id},#{posts_id},#{posts_title},#{posts_bar_name})
+    </insert>
+<!--    删除帖子浏览历史记录-->
+    <delete id="DeletePostsHistory">
+        DELETE FROM posts_history WHERE user_id = #{user_id} AND posts_id = #{posts_id}
+    </delete>
+
+<!--    获取浏览历史-->
+    <select id="GetPostsHistory" resultType="postshistory">
+        SELECT * FROM posts_history WHERE user_id = #{user_id}
+        ORDER BY history_time DESC
+    </select>
+
+
+<!--    搜索结果，贴吧模糊搜索-->
+    <resultMap id="SearchBarMap" type="searchresult">
+        <id column="posts_bar_id" property="posts_bar_id"></id>
+        <result column="posts_bar_name" property="posts_bar_name"></result>
+        <result column="posts_bar_logo_path" property="posts_bar_logo_path"></result>
+        <result column="user_id" property="user_id"></result>
+        <collection property="SearchBarLikeSum"
+                    select="SearchBarLikeSum"
+                    column="posts_bar_id">
+        </collection>
+        <collection property="SearchPostsSum"
+                    select="SearchPostsSum"
+                    column="posts_bar_id">
+        </collection>
+        <collection property="UserLike"
+                    select="UserLike"
+                    column="{posts_bar_id=posts_bar_id,user_id=user_id}">
+        </collection>
+    </resultMap>
+    <select id="SearchBarLikeSum" resultType="int">
+        SELECT COUNT(*) FROM posts_bar_like WHERE posts_bar_id = #{posts_bar_id}
+    </select>
+    <select id="SearchPostsSum" resultType="int">
+        SELECT COUNT(*) FROM posts WHERE posts_bar_id = #{posts_bar_id}
+    </select>
+    <select id="UserLike" resultType="int">
+        SELECT COUNT(*)
+        FROM posts_bar_like
+        WHERE posts_bar_id = #{posts_bar_id}
+          AND user_id = #{user_id}
+    </select>
+    <select id="SearchBar" resultMap="SearchBarMap">
+        SELECT  posts_bar_id,posts_bar_name,posts_bar_logo_path, #{user_id} AS user_id
+        FROM posts_bar WHERE posts_bar_name LIKE "%"#{posts_bar_name}"%"
+    </select>
+
+
+<!--    帖子收藏-->
+<!--    查询是否已经收藏-->
+    <select id="SelectPostsSave" resultType="int">
+        SELECT COUNT(*) FROM posts_save WHERE posts_id=#{posts_id} AND save_user_id = #{save_user_id}
+    </select>
+<!--    插入记录-->
+    <insert id="PostsSave" parameterType="usersaveposts">
+        INSERT INTO posts_save(posts_id,save_user_id) VALUES(#{posts_id},#{save_user_id})
+    </insert>
+
+
+
+</mapper>
